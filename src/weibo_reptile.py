@@ -206,10 +206,15 @@ class Weibo_reptile():
     def save_to_gzip(self, userprofile, statuses):
 
         if self.json_file.rfind('/') == -1:
-            file_name = time.strftime("%Y_%m_%d") + '_' + self.json_file
+            directory = time.strftime("%Y/%m/")
+            file_name = directory + time.strftime("%Y_%m_%d") + '_' + self.json_file
 
         else:
-            file_name = self.json_file[0: self.json_file.rfind('/') + 1] + time.strftime("%Y_%m_%d") + '_' + self.json_file.split('/')[-1]
+            directory = self.json_file[0: self.json_file.rfind('/') + 1] + time.strftime("%Y/%m/")  
+            file_name = directory + time.strftime("%Y_%m_%d") + '_' + self.json_file.split('/')[-1]
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         gzip_out = gzip.open(file_name, "ab+") 
 
