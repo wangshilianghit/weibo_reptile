@@ -221,6 +221,7 @@ class Weibo_reptile():
         for status in statuses:
             json_object = json.dumps(status, ensure_ascii = False).encode('utf-8')
             gzip_out.write(json_object)
+            gzip_out.write("\n")
         gzip_out.close()
 
     def save_data(self, userprofile, status):
