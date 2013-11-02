@@ -241,7 +241,7 @@ def reptile(weibo_reptile,userid):
             return_ids = weibo_reptile.friends_ids(id)
 
             userprofile = weibo_reptile.get_userprofile(id)
-            status = weibo_reptile.get_latest_weibo(count = 200, user_id = id)
+            status = weibo_reptile.get_latest_weibo(count = 100, user_id = id)
 
             if status is None or userprofile is None:
                 continue
