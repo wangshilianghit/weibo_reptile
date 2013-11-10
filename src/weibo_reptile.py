@@ -13,14 +13,15 @@ import os
 import simplejson as json
 import time
 import gzip
+import sys, getopt
 
 
 class Weibo_reptile():
 
-    def __init__(self,consumer_key, consumer_secret, json_file):
+    def __init__(self,consumer_key, consumer_secret, json_path):
 
         self.consumer_key, self.consumer_secret = consumer_key, consumer_secret
-        self.json_file = json_file
+        self.json_path = json_path
 
     def getAtt(self, key):
 
@@ -191,10 +192,10 @@ class Weibo_reptile():
     def save_to_json(self, userprofile, statuses):
 
         if self.json_file.rfind('/') == -1:
-            file_name = time.strftime("%Y_%m_%d") + '_' + self.json_file
+            file_name = time.strftime("%Y_%m_%d") + '.json' 
 
         else:
-            file_name = self.json_file[0: self.json_file.rfind('/') + 1] + time.strftime("%Y_%m_%d") + '_' + self.json_file.split('/')[-1]
+            file_name = self.json_file[0: self.json_path.rfind('/') + 1] + time.strftime("%Y_%m_%d") + '.json'
 
         json_file = file(file_name, "ab+") 
         for status in statuses:
@@ -205,13 +206,13 @@ class Weibo_reptile():
 
     def save_to_gzip(self, userprofile, statuses):
 
-        if self.json_file.rfind('/') == -1:
+        if self.json_path.rfind('/') == -1:
             directory = time.strftime("%Y/%m/")
-            file_name = directory + time.strftime("%Y_%m_%d") + '_' + self.json_file
+            file_name = directory + time.strftime("%Y_%m_%d") + '.json.gz'
 
         else:
-            directory = self.json_file[0: self.json_file.rfind('/') + 1] + time.strftime("%Y/%m/")  
-            file_name = directory + time.strftime("%Y_%m_%d") + '_' + self.json_file.split('/')[-1]
+            directory = self.json_path[0: self.json_path.rfind('/') + 1] + time.strftime("%Y/%m/")  
+            file_name = directory + time.strftime("%Y_%m_%d") + '.json.gz'
 
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -219,7 +220,8 @@ class Weibo_reptile():
         gzip_out = gzip.open(file_name, "ab+") 
 
         for status in statuses:
-            json_object = json.dumps(status, ensure_ascii = False).encode('utf-8')
+            #json_object = json.dumps(status, ensure_ascii = False).encode('utf-8')
+            json_object = json.dumps(status)
             gzip_out.write(json_object)
             gzip_out.write("\n")
         gzip_out.close()
@@ -267,10 +269,10 @@ def reptile(weibo_reptile,userid):
         user_queue.remove(id)
         user_queue.extend(return_ids)
 
-def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_file):
+def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_path):
 
     try:
-        weibo_reptile = Weibo_reptile(consumer_key, consumer_secret, json_file)
+        weibo_reptile = Weibo_reptile(consumer_key, consumer_secret, json_path)
         weibo_reptile.setToken(key, secret)
         reptile(weibo_reptile,userid)
         weibo_reptile.connection.close()
@@ -281,18 +283,61 @@ def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_file):
 
 
 def main():
-    argv = sys.argv[1:]
 
-    if len(argv) != 2:
+    json_path = None 
+    pid_file = None 
+    num_thread = None 
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv, "hf:p:n:")
+
+    except getopt.GetoptError:
         print """
-Usage: %s [filename] [number of threads] 
+Usage: %s -f filepath [-p pid_file] -n [number of threads] 
 """ % (sys.argv[0])
         sys.exit(1)
 
-    json_file = argv.pop(0)
-    num_thread = argv.pop(0)
+    for opt, arg in opts:
+
+        if opt == '-h':
+            print """
+Usage: %s -f filepath [-p pid_file] -n [number of threads] 
+""" % (sys.argv[0])
+            sys.exit(1)
+
+        elif opt in ("-f"):
+            json_path = arg
+
+        elif opt in ("-p"):
+            pid_file = arg
+
+        elif opt in ("-n"):
+            num_thread = arg
+
+    if json_path == None or num_thread == None: 
+        print """
+Usage: %s -f filepath [-p pid_file] -n [number of threads] 
+""" % (sys.argv[0])
+        sys.exit(1)
+
+    print "json_path: " + json_path 
+    if pid_file != None:
+        print "pid_file: " + pid_file
+    print "num_thread: " + str(num_thread)
 
     num = 0
+
+    #create a pid file
+    if pid_file != None: 
+        pid = str(os.getpid())
+        if os.path.isfile(pid_file):
+            print "%s already exists, exiting. Please delete it before running." % pid_file
+            sys.exit()
+
+        else:
+            print 'write pid file now'
+            file(pid_file, 'w').write(pid)
+            
     # Pick correct URL root to use
     logging.config.fileConfig("logging.conf")
     with open('apk.txt') as f:
@@ -300,7 +345,7 @@ Usage: %s [filename] [number of threads]
             if num >= int(num_thread):
                 break 
             j = i.strip().split(' ')
-            p = Process(target=run_crawler, args=(j[0], j[1], j[2], j[3], j[4], json_file))
+            p = Process(target=run_crawler, args=(j[0], j[1], j[2], j[3], j[4], json_path))
             p.start()
             num += 1
 
