@@ -10,7 +10,7 @@ import time,os,pickle,sys
 import logging.config 
 from multiprocessing import Process
 import os
-import simplejson as json
+import ujson as json
 import time
 import gzip
 import sys, getopt
@@ -133,8 +133,8 @@ class Weibo_reptile():
 
         next_cursor,cursor = 1,0
         ids = []
-        while(0!=next_cursor):
-            fids = self.api.friends_ids(user_id=id,cursor=cursor)
+        while(0 != next_cursor):
+            fids = self.api.friends_ids(user_id=id, cursor=cursor)
             self.obj = fids
             ids.extend(self.getAtt("ids"))
             cursor = next_cursor = self.getAtt("next_cursor")
@@ -145,9 +145,9 @@ class Weibo_reptile():
 
         info = self.api.rate_limit_status()
         self.obj = info
-        sleep_time = round( (float)(self.getAtt("reset_time_in_seconds"))/self.getAtt("remaining_hits"),2 ) if self.getAtt("remaining_hits") else self.getAtt("reset_time_in_seconds")
-        print self.getAtt("remaining_hits"),self.getAtt("reset_time_in_seconds"),self.getAtt("hourly_limit"),self.getAtt("reset_time")
-        print "sleep time:",sleep_time,'pid:',os.getpid()
+        sleep_time = round( (float)(self.getAtt("reset_time_in_seconds")) / self.getAtt("remaining_hits"), 2) if self.getAtt("remaining_hits") else self.getAtt("reset_time_in_seconds")
+        print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  str(self.getAtt("hourly_limit")) + ", reset time: " + str(self.getAtt("reset_time"))
+        print "sleep time: ", sleep_time, 'pid: ', os.getpid()
         time.sleep(sleep_time + 1.5)
 
     def save_to_file(self, number, userprofile, statuses):
@@ -199,7 +199,8 @@ class Weibo_reptile():
 
         json_file = file(file_name, "ab+") 
         for status in statuses:
-            json_object = json.dumps(status, ensure_ascii = False).encode('utf-8')
+            #json_object = json.dumps(status, ensure_ascii = False).encode('utf-8')
+            json_object = json.dumps(status)
             json_file.write(json_object)
             json_file.write("\n")
         json_file.close()
@@ -231,7 +232,7 @@ class Weibo_reptile():
         self.collection_statuses.insert(status)
         self.collection_userprofile.insert(userprofile)
 
-def reptile(weibo_reptile,userid):
+def reptile(weibo_reptile, userid):
 
     number = 1                #This variable store the number of users that has crawled
     max_number = 10000000     #The maximum number of user information that needs to crawl
@@ -288,6 +289,7 @@ def main():
     pid_file = None 
     num_thread = None 
     argv = sys.argv[1:]
+
     try:
         opts, args = getopt.getopt(argv, "hf:p:n:")
 
@@ -320,10 +322,10 @@ Usage: %s -f filepath [-p pid_file] -n [number of threads]
 """ % (sys.argv[0])
         sys.exit(1)
 
-    print "json_path: " + json_path 
+    print "Store json.gz in " + json_path + " directory" 
     if pid_file != None:
-        print "pid_file: " + pid_file
-    print "num_thread: " + str(num_thread)
+        print "Store pid file " + pid_file
+    print "Num of threads: " + str(num_thread)
 
     num = 0
 
@@ -335,7 +337,6 @@ Usage: %s -f filepath [-p pid_file] -n [number of threads]
             sys.exit()
 
         else:
-            print 'write pid file now'
             file(pid_file, 'w').write(pid)
             
     # Pick correct URL root to use

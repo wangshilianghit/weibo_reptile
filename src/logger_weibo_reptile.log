@@ -1,0 +1,16 @@
+2013-11-10 16:12:38,771 - logger_weibo_reptile - ERROR - Error occured in reptile,id:1887550093
+Error:cannot concatenate 'str' and 'int' objects
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 244, in reptile
+    weibo_reptile.manage_access()
+  File "./weibo_reptile.py", line 149, in manage_access
+    print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  self.getAtt("hourly_limit") + ", reset time: " + str(self.getAtt("reset_time"))
+TypeError: cannot concatenate 'str' and 'int' objects
+2013-11-10 16:12:38,776 - logger_weibo_reptile - ERROR - Error occured in reptile,id:1404376560
+Error:cannot concatenate 'str' and 'int' objects
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 244, in reptile
+    weibo_reptile.manage_access()
+  File "./weibo_reptile.py", line 149, in manage_access
+    print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  self.getAtt("hourly_limit") + ", reset time: " + str(self.getAtt("reset_time"))
+TypeError: cannot concatenate 'str' and 'int' objects
