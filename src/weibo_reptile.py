@@ -19,7 +19,8 @@ import sys, getopt
 class Weibo_reptile():
 
     def __init__(self,consumer_key, consumer_secret, json_path):
-
+        
+        self.extra_sleep_time = 0
         self.consumer_key, self.consumer_secret = consumer_key, consumer_secret
         self.json_path = json_path
 
@@ -148,7 +149,8 @@ class Weibo_reptile():
         sleep_time = round( (float)(self.getAtt("reset_time_in_seconds")) / self.getAtt("remaining_hits"), 2) if self.getAtt("remaining_hits") else self.getAtt("reset_time_in_seconds")
         print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  str(self.getAtt("hourly_limit")) + ", reset time: " + str(self.getAtt("reset_time"))
         print "sleep time: ", sleep_time, 'pid: ', os.getpid()
-        time.sleep(sleep_time + 1.5)
+        print "total sleep time: ", sleep_time + self.extra_sleep_time, 'pid: ', os.getpid()
+        time.sleep(sleep_time + self.extra_sleep_time)
 
     def save_to_file(self, number, userprofile, statuses):
 

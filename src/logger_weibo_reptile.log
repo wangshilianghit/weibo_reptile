@@ -14,3 +14,79 @@ Traceback (most recent call last):
   File "./weibo_reptile.py", line 149, in manage_access
     print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  self.getAtt("hourly_limit") + ", reset time: " + str(self.getAtt("reset_time"))
 TypeError: cannot concatenate 'str' and 'int' objects
+2013-11-11 17:12:31,335 - logger_weibo_reptile - ERROR - Error occured in reptile,id:1404376560
+Error:global name 'EXTRA_SLEEP_TIME' is not defined
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 246, in reptile
+    weibo_reptile.manage_access()
+  File "./weibo_reptile.py", line 153, in manage_access
+    time.sleep(sleep_time + EXTRA_SLEEP_TIME)
+NameError: global name 'EXTRA_SLEEP_TIME' is not defined
+2013-11-11 17:13:00,900 - logger_weibo_reptile - ERROR - Error occured in reptile,id:1404376560
+Error:Weibo_reptile instance has no attribute 'EXTRA_SLEEP_TIME'
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 246, in reptile
+    weibo_reptile.manage_access()
+  File "./weibo_reptile.py", line 153, in manage_access
+    time.sleep(sleep_time + self.EXTRA_SLEEP_TIME)
+AttributeError: Weibo_reptile instance has no attribute 'EXTRA_SLEEP_TIME'
+2013-11-11 17:16:57,107 - logger_weibo_reptile - ERROR - Error occured when access userprofile use user_id:1644055230
+Error:error_code:400,40023:User does not exists!
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 72, in get_userprofile
+    user = self.api.get_user(id)
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 191, in _call
+    return method.execute()
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 177, in execute
+    raise WeibopError(error_msg)
+WeibopError: error_code:400,40023:User does not exists!
+2013-11-11 17:21:44,381 - logger_weibo_reptile - ERROR - Error occured when access userprofile use user_id:1644055230
+Error:error_code:400,40023:User does not exists!
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 72, in get_userprofile
+    user = self.api.get_user(id)
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 191, in _call
+    return method.execute()
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 177, in execute
+    raise WeibopError(error_msg)
+WeibopError: error_code:400,40023:User does not exists!
+2013-11-11 17:26:32,048 - logger_weibo_reptile - ERROR - Error occured when access userprofile use user_id:1644055230
+Error:error_code:400,40023:User does not exists!
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 72, in get_userprofile
+    user = self.api.get_user(id)
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 191, in _call
+    return method.execute()
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 177, in execute
+    raise WeibopError(error_msg)
+WeibopError: error_code:400,40023:User does not exists!
+2013-11-11 17:27:09,295 - logger_weibo_reptile - ERROR - Error occured when access userprofile use user_id:1778853552
+Error:error_code:400,40023:User does not exists!
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 72, in get_userprofile
+    user = self.api.get_user(id)
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 191, in _call
+    return method.execute()
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 177, in execute
+    raise WeibopError(error_msg)
+WeibopError: error_code:400,40023:User does not exists!
+2013-11-11 17:27:11,290 - logger_weibo_reptile - ERROR - Error occured when access userprofile use user_id:3180311914
+Error:error_code:400,40023:User does not exists!
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 72, in get_userprofile
+    user = self.api.get_user(id)
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 191, in _call
+    return method.execute()
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 177, in execute
+    raise WeibopError(error_msg)
+WeibopError: error_code:400,40023:User does not exists!
+2013-11-11 17:27:20,267 - logger_weibo_reptile - ERROR - Error occured when access userprofile use user_id:2377045891
+Error:error_code:400,40023:User does not exists!
+Traceback (most recent call last):
+  File "./weibo_reptile.py", line 72, in get_userprofile
+    user = self.api.get_user(id)
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 191, in _call
+    return method.execute()
+  File "/home/wang/study/CLSP/weibo_reptile/src/weibopy/binder.py", line 177, in execute
+    raise WeibopError(error_msg)
+WeibopError: error_code:400,40023:User does not exists!
