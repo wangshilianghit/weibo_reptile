@@ -18,11 +18,12 @@ import sys, getopt
 
 class Weibo_reptile():
 
-    def __init__(self,consumer_key, consumer_secret, json_path):
+    def __init__(self,consumer_key, consumer_secret, json_path, email):
         
         self.extra_sleep_time = 0
         self.consumer_key, self.consumer_secret = consumer_key, consumer_secret
         self.json_path = json_path
+        self.email = email
 
     def getAtt(self, key):
 
@@ -144,52 +145,49 @@ class Weibo_reptile():
 
     def manage_access(self):
 
-        info = self.api.rate_limit_status()
-        self.obj = info
-        sleep_time = round( (float)(self.getAtt("reset_time_in_seconds")) / self.getAtt("remaining_hits"), 2) if self.getAtt("remaining_hits") else self.getAtt("reset_time_in_seconds")
-        print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  str(self.getAtt("hourly_limit")) + ", reset time: " + str(self.getAtt("reset_time"))
-        print "sleep time: ", sleep_time, 'pid: ', os.getpid()
-        print "total sleep time: ", sleep_time + self.extra_sleep_time, 'pid: ', os.getpid()
-        time.sleep(sleep_time + self.extra_sleep_time)
+        try:
+            info = self.api.rate_limit_status()
+            self.obj = info
+            sleep_time = round( (float)(self.getAtt("reset_time_in_seconds")) / self.getAtt("remaining_hits"), 2) if self.getAtt("remaining_hits") else self.getAtt("reset_time_in_seconds")
+            print "remining hits: " + str(self.getAtt("remaining_hits")) + ", reset time in secondes: ", str(self.getAtt("reset_time_in_seconds")) + ", hourly limit: " +  str(self.getAtt("hourly_limit")) + ", reset time: " + str(self.getAtt("reset_time"))
+            print "sleep time: ", sleep_time, 'pid: ', os.getpid()
+            print "total sleep time: ", sleep_time + self.extra_sleep_time, 'pid: ', os.getpid()
+            time.sleep(sleep_time + self.extra_sleep_time)
+        except Exception as e:
+            print 'Apk ' + self.consumer_key + ' doesn\'t work!' 
+            invalid_key_file = file("invalid_key.txt", "ab+")
+            invalid_key_file.write(self.consumer_key + "\n")
+            invalid_key_file.close() 
+            
+            #send Email to the user
+            if self.email:
+                content = "An apk has failed\n"
 
-    def save_to_file(self, number, userprofile, statuses):
+                f = file("apk.txt")
+                f2 = file("invalid_key.txt")
+                num_key = 0
 
-        self.profile_file.write('Profile number: ' + str(number) + '\n')
+                invalid_list = []
+                for invalid_id in f2.readlines():
+                    invalid_list.append(invalid_id.rstrip())
 
-        for key, value in userprofile.iteritems():
+                for apk_line in f.readlines():
+                    apk_strip = apk_line.strip().split(' ')
+                    if apk_strip[0] not in invalid_list:
+                        num_key += 1
 
-            if key == None or value == None:
-                continue
+                content += "Still have " + str(num_key) + " keys left" 
+                self.send_email(content)
 
-            if isinstance(value, basestring): 
-                print key  + ': ' + value
-                self.profile_file.write(key + ': ' + value.encode('utf-8'))
-            else:
-                print key + ': ' + str(value)
-                self.profile_file.write(key + ': ' + str(value))
+    """
+        Please write this function
+        You can get the Email address with self.email
+        Email content from the parameter content
+    """
+    def send_email(self, content):
 
-            self.profile_file.write('\n')
-        self.profile_file.write('\n')
-
-        print 'Profile id: ' + userprofile['name'] 
-        self.status_file.write('Profile name: ' + userprofile['name'].encode('utf-8') + '\n')
-
-        for status in statuses: 
-            for key, value in status.iteritems():
-
-                if key == None or value == None:
-                    continue
-
-                if isinstance(value, basestring):
-                    print key  + ': ' + value
-                    self.status_file.write(key + ': ' + value.encode('utf-8'))
-                else:
-                    print key + ': ' + str(value)
-                    self.status_file.write(key + ': ' + str(value))
-
-                self.status_file.write('\n')
-            self.status_file.write('\n')
-        self.status_file.write('\n')
+        print 'Send email to ' + self.email
+        print 'Content ' + content
 
     def save_to_json(self, userprofile, statuses):
 
@@ -272,10 +270,11 @@ def reptile(weibo_reptile, userid):
         user_queue.remove(id)
         user_queue.extend(return_ids)
 
-def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_path):
+def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_path, email = None):
 
     try:
-        weibo_reptile = Weibo_reptile(consumer_key, consumer_secret, json_path)
+        print 'consumer key: ' + consumer_key
+        weibo_reptile = Weibo_reptile(consumer_key, consumer_secret, json_path, email)
         weibo_reptile.setToken(key, secret)
         reptile(weibo_reptile,userid)
         weibo_reptile.connection.close()
@@ -289,15 +288,16 @@ def main():
 
     json_path = None 
     pid_file = None 
+    email = None
     num_thread = None 
     argv = sys.argv[1:]
 
     try:
-        opts, args = getopt.getopt(argv, "hf:p:n:")
+        opts, args = getopt.getopt(argv, "hf:p:n:e:")
 
     except getopt.GetoptError:
         print """
-Usage: %s -f filepath [-p pid_file] -n [number of threads] 
+Usage: %s -f filepath [-p pid_file] [-e email] -n [number of threads] 
 """ % (sys.argv[0])
         sys.exit(1)
 
@@ -305,7 +305,7 @@ Usage: %s -f filepath [-p pid_file] -n [number of threads]
 
         if opt == '-h':
             print """
-Usage: %s -f filepath [-p pid_file] -n [number of threads] 
+Usage: %s -f filepath [-p pid_file] [-e email] -n [number of threads] 
 """ % (sys.argv[0])
             sys.exit(1)
 
@@ -314,6 +314,9 @@ Usage: %s -f filepath [-p pid_file] -n [number of threads]
 
         elif opt in ("-p"):
             pid_file = arg
+
+        elif opt in ("-e"):
+            email = arg
 
         elif opt in ("-n"):
             num_thread = arg
@@ -343,12 +346,20 @@ Usage: %s -f filepath [-p pid_file] -n [number of threads]
             
     # Pick correct URL root to use
     logging.config.fileConfig("logging.conf")
-    with open('apk.txt') as f:
-        for i in f.readlines():
+    with open('apk.txt') as f, open('invalid_key.txt', 'ab+') as f2:
+        invalid_list = []
+        for invalid_id in f2.readlines():
+            invalid_list.append(invalid_id.rstrip())
+
+        for apk_line in f.readlines():
             if num >= int(num_thread):
                 break 
-            j = i.strip().split(' ')
-            p = Process(target=run_crawler, args=(j[0], j[1], j[2], j[3], j[4], json_path))
+            
+            apk_strip = apk_line.strip().split(' ')
+            if apk_strip[0] in invalid_list:
+                continue 
+
+            p = Process(target = run_crawler, args=(apk_strip[0], apk_strip[1], apk_strip[2], apk_strip[3], apk_strip[4], json_path, email))
             p.start()
             num += 1
 
