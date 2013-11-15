@@ -106,6 +106,7 @@ class Weibo_reptile():
             timeline = self.api.user_timeline(count = count, user_id = user_id)
 
         except Exception as e:
+
             print "error occured when access status use user_id:",user_id
             print "Error:",e
             log.error("Error occured when access status use user_id:{0}\nError:{1}".format(user_id, e),exc_info=sys.exc_info())
@@ -153,34 +154,38 @@ class Weibo_reptile():
             print "sleep time: ", sleep_time, 'pid: ', os.getpid()
             print "total sleep time: ", sleep_time + self.extra_sleep_time, 'pid: ', os.getpid()
             time.sleep(sleep_time + self.extra_sleep_time)
+
         except Exception as e:
-            print 'Apk ' + self.consumer_key + ' doesn\'t work!' 
-            invalid_key_file = file("invalid_key.txt", "ab+")
-            invalid_key_file.write(self.consumer_key + "\n")
-            invalid_key_file.close() 
-            
-            #send Email to the user
-            if self.email:
-                content = "An apk has failed\n"
 
-                f = file("apk.txt")
-                f2 = file("invalid_key.txt")
-                num_key = 0
+            if "invalid" in str(e):
+                print 'Apk ' + self.consumer_key + ' doesn\'t work!' 
+                invalid_key_file = file("invalid_key.txt", "ab+")
+                invalid_key_file.write(self.consumer_key + "\n")
+                invalid_key_file.close() 
+                
+                #send Email to the user
+                if self.email:
+                    content = "An apk has failed\n"
 
-                invalid_list = []
-                for invalid_id in f2.readlines():
-                    invalid_list.append(invalid_id.rstrip())
+                    f = file("apk.txt")
+                    f2 = file("invalid_key.txt")
+                    num_key = 0
 
-                for apk_line in f.readlines():
-                    apk_strip = apk_line.strip().split(' ')
-                    if apk_strip[0] not in invalid_list:
-                        num_key += 1
+                    invalid_list = []
+                    for invalid_id in f2.readlines():
+                        invalid_list.append(invalid_id.rstrip())
 
-                content += "Still have " + str(num_key) + " keys left" 
-                self.send_email(content)
+                    for apk_line in f.readlines():
+                        apk_strip = apk_line.strip().split(' ')
+                        if apk_strip[0] not in invalid_list:
+                            num_key += 1
+
+                    content += "Still have " + str(num_key) + " keys left" 
+                    self.send_email(content)
+
 
     """
-        Please write this function
+        Please modify this function
         You can get the Email address with self.email
         Email content from the parameter content
     """
@@ -232,6 +237,7 @@ class Weibo_reptile():
         self.collection_statuses.insert(status)
         self.collection_userprofile.insert(userprofile)
 
+
 def reptile(weibo_reptile, userid):
 
     number = 1                #This variable store the number of users that has crawled
@@ -255,9 +261,10 @@ def reptile(weibo_reptile, userid):
             #Save the data to gzip
             weibo_reptile.save_to_gzip(userprofile, status)
 
-
         except Exception as e:
-            log.error("Error occured in reptile,id:{0}\nError:{1}".format(id, e),exc_info=sys.exc_info())
+            #log.error("Error occured in reptile,id:{0}\nError: {1}".format(id, e), exc_info = sys.exc_info())
+            print e
+
             time.sleep(60)
             continue
 
@@ -273,15 +280,15 @@ def reptile(weibo_reptile, userid):
 def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_path, email = None):
 
     try:
-        print 'consumer key: ' + consumer_key
+        #print 'consumer key: ' + consumer_key
         weibo_reptile = Weibo_reptile(consumer_key, consumer_secret, json_path, email)
         weibo_reptile.setToken(key, secret)
-        reptile(weibo_reptile,userid)
+        reptile(weibo_reptile, userid)
         weibo_reptile.connection.close()
 
     except Exception as e:
         print e
-        log.error("Error occured in run_crawler,pid:{1}\nError:{2}".format(os.getpid(), e),exc_info=sys.exc_info())
+        #log.error("Error occured in run_crawler, pid: {1}\nError: {2}".format(os.getpid(), e), exc_info = sys.exc_info())
 
 
 def main():
