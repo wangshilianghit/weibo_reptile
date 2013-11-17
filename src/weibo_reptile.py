@@ -185,7 +185,6 @@ class Weibo_reptile():
 
 
     """
-        Please modify this function
         You can get the Email address with self.email
         Email content from the parameter content
     """
@@ -331,7 +330,7 @@ Usage: %s -f filepath [-p pid_file] [-e email] -n [number of threads]
 
     if json_path == None or num_thread == None: 
         print """
-Usage: %s -f filepath [-p pid_file] -n [number of threads] 
+Usage: %s -f filepath [-p pid_file] [-e email] -n [number of threads] 
 """ % (sys.argv[0])
         sys.exit(1)
 
@@ -343,14 +342,16 @@ Usage: %s -f filepath [-p pid_file] -n [number of threads]
     num = 0
 
     #create a pid file
-    if pid_file != None: 
+    if pid_file != None:
         pid = str(os.getpid())
+        '''
         if os.path.isfile(pid_file):
             print "%s already exists, exiting. Please delete it before running." % pid_file
             sys.exit()
 
         else:
-            file(pid_file, 'w').write(pid)
+        '''
+        file(pid_file, 'w').write(pid)
             
     # Pick correct URL root to use
     logging.config.fileConfig("logging.conf")
