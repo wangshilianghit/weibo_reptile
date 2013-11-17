@@ -189,10 +189,11 @@ class Weibo_reptile():
         You can get the Email address with self.email
         Email content from the parameter content
     """
-    def send_email(self, content):
-
-        print 'Send email to ' + self.email
-        print 'Content ' + content
+    def send_email(self, message):
+        
+        print 'Sending email: %s' %message 
+        command = 'echo "%s" | mail -s "SUBJECT_LINE" %s' % (message, self.email)
+        os.system(command)
 
     def save_to_json(self, userprofile, statuses):
 
