@@ -238,14 +238,18 @@ class Weibo_reptile():
         self.collection_statuses.insert(status)
         self.collection_userprofile.insert(userprofile)
 
-
+"""
+    The method I used for crawling users's data is as follows:
+    It will start from a user who have lots of friends. Use the BFS algorithm to get other uesr's status.  
+    I use a list "user_queue" to stores the next user that needs to crawl. At first, it have one user. 
+    "visited_queue" will store all users that have been visited. 
+"""    
 def reptile(weibo_reptile, userid):
 
-    number = 1                #This variable store the number of users that has crawled
-    max_number = 10000000     #The maximum number of user information that needs to crawl
-    user_queue = [userid]     #This list functioned as a queue. It stores the next userid that needs to crawl
+    number = 1                # This variable store the number of users that has crawled
+    user_queue = [userid]     # This list functioned as a queue. It stores the next userid that needs to crawl
+    visited_queue = user_queue
 
-    #get 100,000 users info and status
     for id in user_queue:
         try:
             weibo_reptile.manage_access()
@@ -265,17 +269,19 @@ def reptile(weibo_reptile, userid):
         except Exception as e:
             #log.error("Error occured in reptile,id:{0}\nError: {1}".format(id, e), exc_info = sys.exc_info())
             print e
-
             time.sleep(60)
             continue
 
         number += 1
-        print 'Number of users info and status has cralwed:' + str(number) 
+        visited_queue.append(id)
+        print 'Number of users for pid: ' + str(os.getpid()) + ' has cralwed: ' + str(number) 
 
-        if number >= max_number:
-            break;
-
+        # Remove that user from user_queue, and add the user that hasn't been visited in the user_queue
         user_queue.remove(id)
+
+        # In order to be more efficient, I use pyhon's set operation, which will add the element that doesn't occur in 
+        # visited_queue and user_queue into the user_queue 
+        return_ids = list(set(return_ids) - set(visited_queue) - set(user_queue))
         user_queue.extend(return_ids)
 
 def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_path, email = None):
