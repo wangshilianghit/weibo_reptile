@@ -8,12 +8,13 @@ from weibopy.binder import bind_api
 from weibopy.error import WeibopError
 import time,os,pickle,sys
 import logging.config 
-from multiprocessing import Process
+from multiprocessing import Process, Manager 
 import os
 import ujson as json
 import time
 import gzip
 import sys, getopt
+import pprint, pickle
 
 
 class Weibo_reptile():
@@ -247,10 +248,16 @@ def reptile(weibo_reptile, userid):
 
     number = 1                # This variable store the number of users that has crawled
     user_queue = [userid]     # This list functioned as a queue. It stores the next userid that needs to crawl
-    visited_queue = user_queue
+    visited_queue = []
+
+    # Read the visited user list from file to visited_queue
+    visited_list_fp = open('visited.txt', 'ab+')
+    for user_id in visited_list_fp.readlines():
+        visited_queue.append(user_id)
 
     for id in user_queue:
         try:
+
             weibo_reptile.manage_access()
             return_ids = weibo_reptile.friends_ids(id)
 
@@ -272,8 +279,15 @@ def reptile(weibo_reptile, userid):
             continue
 
         number += 1
-        visited_queue.append(id)
         print 'Number of users for pid: ' + str(os.getpid()) + ' has cralwed: ' + str(number) 
+
+        # Add that user to the global visited queue list
+        visited_queue.append(id)
+
+        # Store that user to the file
+        visited_list_fp = open('visited.txt', 'ab+')
+        visited_list_fp.write(str(id) + '\n')
+        visited_list_fp.close()
 
         # Remove that user from user_queue, and add the user that hasn't been visited in the user_queue
         user_queue.remove(id)
@@ -283,10 +297,11 @@ def reptile(weibo_reptile, userid):
         return_ids = list(set(return_ids) - set(visited_queue) - set(user_queue))
         user_queue.extend(return_ids)
 
+
 def run_crawler(consumer_key, consumer_secret, key, secret, userid, json_path, email = None):
 
     try:
-        #print 'consumer key: ' + consumer_key
+        print 'consumer key: ' + consumer_key
         weibo_reptile = Weibo_reptile(consumer_key, consumer_secret, json_path, email)
         weibo_reptile.setToken(key, secret)
         reptile(weibo_reptile, userid)
@@ -374,12 +389,17 @@ Usage: %s -f filepath [-p pid_file] [-e email] -n [number of threads]
             if apk_strip[0] in invalid_list:
                 continue 
 
-            p = Process(target = run_crawler, args=(apk_strip[0], apk_strip[1], apk_strip[2], apk_strip[3], apk_strip[4], json_path, email))
+            p = Process(target=run_crawler, args=(apk_strip[0], apk_strip[1], apk_strip[2], apk_strip[3], apk_strip[4], json_path, email))
             p.start()
             num += 1
 
 if __name__ == "__main__":
 
-    log = logging.getLogger('logger_weibo_reptile')
+    # manager = Manager()
+
+    # All threads will store the vistied user id to visited_queue 
+    # visited_queue = manager.list()
+
     main()
+
 
